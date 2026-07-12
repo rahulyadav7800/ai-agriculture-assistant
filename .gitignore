@@ -1,0 +1,86 @@
+# ==========================
+# Python
+# ==========================
+
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.so
+
+# Virtual Environment
+.venv/
+venv/
+env/
+
+# Environment Variables
+.env
+
+# SQLite Database
+*.db
+*.sqlite3
+
+# Logs
+*.log
+
+# Cache
+.pytest_cache/
+.mypy_cache/
+.cache/
+
+# IDE
+.vscode/
+.idea/
+
+# macOS
+.DS_Store
+
+# Windows
+Thumbs.db
+
+# ==========================
+# Node / React
+# ==========================
+
+node_modules/
+dist/
+build/
+
+# npm
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# ==========================
+# Uploads
+# ==========================
+
+backend/uploads/*
+
+!backend/uploads/.gitkeep
+
+# Reports
+backend/reports/*
+
+!backend/reports/.gitkeep
+
+# Trained Models
+trained_models/*
+
+!trained_models/.gitkeep
+
+# Datasets
+datasets/*
+
+!datasets/.gitkeep
+
+# Coverage
+coverage/
+
+# Temporary Files
+*.tmp
+*.temp
+
+# OS Files
+Desktop.ini
