@@ -3,13 +3,17 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
+from backend.api.upload import router as upload_router
 from backend.config import settings
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+
 	print(f"Starting {settings.app_name} v{settings.app_version}")
+
 	yield
+
 	print("Application stopped.")
 
 
@@ -30,8 +34,13 @@ app.add_middleware(
 )
 
 
+# Register API Routers
+app.include_router(upload_router)
+
+
 @app.get("/", tags=["Home"])
 async def home():
+
 	return {
 		"success": True,
 		"application": settings.app_name,
@@ -42,6 +51,7 @@ async def home():
 
 @app.get("/health", tags=["Health"])
 async def health():
+
 	return {
 		"status": "healthy",
 		"debug": settings.debug,
