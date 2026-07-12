@@ -1,27 +1,56 @@
+"""
+File: test_openrouter.py
+Version: 1.0
+Status: Stable
+"""
+
 from backend.services.openrouter import openrouter_service
 
 
 def main():
 
 	print("=" * 60)
-	print("Testing OpenRouter Connection")
+	print("Testing OpenRouter Service")
 	print("=" * 60)
 
-	if openrouter_service.health_check():
-		print("✅ OpenRouter connection successful.\n")
-	else:
-		print("❌ OpenRouter connection failed.")
+	print("\nChecking API Connection...\n")
+
+	if not openrouter_service.health_check():
+
+		print("❌ OpenRouter health check failed.")
+
 		return
 
-	print("Sending test prompt...\n")
+	print("✅ OpenRouter connection successful.\n")
 
-	response = openrouter_service.chat(
-		"Hello! Reply with one sentence confirming that the AI Agriculture Assistant is working."
-	)
+	prompt = """
+Plant Name:
+Neem
 
-	print("Response:\n")
+Scientific Name:
+Azadirachta indica
+
+Please provide:
+
+1. Short introduction
+2. Common diseases
+3. Organic treatment
+4. Chemical treatment
+5. Prevention tips
+
+Keep the explanation beginner friendly.
+"""
+
+	print("Sending AI request...\n")
+
+	response = openrouter_service.chat(prompt)
+
+	print("=" * 60)
+	print("AI Response")
+	print("=" * 60)
 	print(response)
 
 
 if __name__ == "__main__":
+
 	main()
