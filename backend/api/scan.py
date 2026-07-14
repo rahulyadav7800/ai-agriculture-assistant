@@ -22,7 +22,7 @@ router = APIRouter(
 
 
 @router.post(
-	"/",
+	"",
 	summary="Scan a plant image",
 	description="""
 Upload a plant image.
