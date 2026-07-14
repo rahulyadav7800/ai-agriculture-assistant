@@ -1,8 +1,10 @@
 """
 File: response.py
-Version: 1.0
+Version: 2.0
 Status: Stable
 """
+
+from typing import Any
 
 from pydantic import BaseModel
 from pydantic import Field
@@ -31,13 +33,14 @@ class PlantResponse(BaseModel):
 	)
 
 
+
 class ScanResponse(BaseModel):
 
 	success: bool
 
 	plant: PlantResponse
 
-	diagnosis: str
+	diagnosis: dict[str, Any]
 
 
 class ErrorResponse(BaseModel):
@@ -45,4 +48,3 @@ class ErrorResponse(BaseModel):
 	success: bool = False
 
 	error: str
-	

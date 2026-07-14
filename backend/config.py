@@ -40,18 +40,38 @@ class Settings(BaseSettings):
 	# OpenRouter
 	# ==========================================
 
-	openrouter_api_key: str = Field(default="", alias="OPENROUTER_API_KEY")
-	openrouter_model: str = Field(
-		default="qwen/qwen3-32b:free",
-		alias="OPENROUTER_MODEL"
+	openrouter_api_key: str = Field(
+		default="",
+		alias="OPENROUTER_API_KEY"
 	)
 
-	# ==========================================
+	openrouter_text_model: str = Field(
+		default="openai/gpt-oss-120b:free",
+		alias="OPENROUTER_TEXT_MODEL"
+	)
+
+	openrouter_vision_model: str = Field(
+		default="google/gemma-4-31b-it:free",
+		alias="OPENROUTER_VISION_MODEL"
+	)
+
+	openrouter_vision_fallback_model: str = Field(
+		default="google/gemma-4-26b-a4b-it:free",
+		alias="OPENROUTER_VISION_FALLBACK_MODEL"
+	)
+
+	openrouter_vision_second_fallback: str = Field(
+		default="nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free",
+		alias="OPENROUTER_VISION_SECOND_FALLBACK"
+	)
+		# ==========================================
 	# PlantNet
 	# ==========================================
 
-	plantnet_api_key: str = Field(default="", alias="PLANTNET_API_KEY")
-
+	plantnet_api_key: str = Field(
+		default="",
+		alias="PLANTNET_API_KEY"
+	)
 	# ==========================================
 	# Weather
 	# ==========================================

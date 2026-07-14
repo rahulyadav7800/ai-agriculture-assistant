@@ -1,7 +1,13 @@
+import json
+import time
+
 import httpx
 
 from backend.config import settings
+from backend.utils.image_encoder import image_encoder
 from backend.utils.logger import logger
+from backend.services.intent_detector import IntentDetector
+from backend.services.prompt_builder import PromptBuilder
 
 
 SYSTEM_PROMPT = """
@@ -11,10 +17,10 @@ Rules:
 
 - Answer in the same language as the user.
 - Never invent facts.
-- If you are uncertain, clearly mention that the diagnosis is only a possibility.
-- Prefer organic treatment before chemical treatment.
-- Keep explanations practical and beginner friendly.
-- Give step-by-step recommendations whenever possible.
+- If uncertain, clearly mention it.
+- Prefer organic treatment first.
+- Keep explanations practical.
+- Return JSON only when requested.
 """
 
 
@@ -31,63 +37,164 @@ class OpenRouterService:
 			"X-Title": settings.app_name
 		}
 
-		self.timeout = 60
-
-		logger.info(
-			f"OpenRouter initialized with model: {settings.openrouter_model}"
+		self.timeout = httpx.Timeout(
+			connect=30,
+			write=180,
+			read=180,
+			pool=30
 		)
 
-	def _send_request(self, messages: list) -> dict:
+		logger.info(
+			f"Text Model : {settings.openrouter_text_model}"
+		)
+
+		logger.info(
+			f"Vision Model : {settings.openrouter_vision_model}"
+		)
+
+	def _send_request(
+		self,
+		model: str,
+		messages: list,
+		temperature: float = 0.3,
+		max_tokens: int = 1200
+	) -> dict:
 
 		payload = {
-			"model": settings.openrouter_model,
+			"model": model,
 			"messages": messages,
-			"temperature": 0.3,
-			"max_tokens": 1200
+			"temperature": temperature,
+			"max_tokens": max_tokens
 		}
 
-		try:
+		response = httpx.post(
+			self.base_url,
+			headers=self.headers,
+			json=payload,
+			timeout=self.timeout
+		)
 
-			response = httpx.post(
-				self.base_url,
-				headers=self.headers,
-				json=payload,
-				timeout=self.timeout
-			)
+		response.raise_for_status()
 
-			response.raise_for_status()
+		return response.json()
 
-			data = response.json()
+	def _extract_content(
+		self,
+		data: dict
+	) -> str:
 
-			logger.info("OpenRouter request completed successfully.")
+		choices = data.get(
+			"choices",
+			[]
+		)
 
-			return data
-
-		except httpx.TimeoutException:
-
-			logger.exception("OpenRouter request timed out.")
-
-			raise Exception(
-				"OpenRouter request timed out."
-			)
-
-		except httpx.HTTPStatusError as error:
-
-			logger.exception(
-				f"HTTP Error {error.response.status_code}: {error.response.text}"
-			)
+		if not choices:
 
 			raise Exception(
-				f"HTTP Error: {error.response.status_code}"
+				"No response from OpenRouter."
 			)
 
-		except Exception as error:
+		content = (
+			choices[0]
+			.get("message", {})
+			.get("content", "")
+		)
 
-			logger.exception(
-				f"Unexpected OpenRouter Error: {error}"
+		if not content:
+
+			raise Exception(
+				"Empty response."
 			)
 
-			raise
+		return content.strip()
+
+	def _vision_models(self) -> list[str]:
+
+		models = [
+			settings.openrouter_vision_model
+		]
+
+		if hasattr(
+			settings,
+			"openrouter_vision_fallback_model"
+		):
+
+			value = getattr(
+				settings,
+				"openrouter_vision_fallback_model"
+			)
+
+			if value:
+
+				models.append(value)
+
+		if hasattr(
+			settings,
+			"openrouter_vision_second_fallback"
+		):
+
+			value = getattr(
+				settings,
+				"openrouter_vision_second_fallback"
+			)
+
+			if value:
+
+				models.append(value)
+
+		return models
+
+	def _vision_request(
+		self,
+		messages: list
+	) -> dict:
+
+		last_error = None
+
+		for model in self._vision_models():
+
+			try:
+
+				logger.info(
+					f"Trying Vision Model: {model}"
+				)
+
+				return self._send_request(
+					model=model,
+					messages=messages,
+					temperature=0.1,
+					max_tokens=800
+				)
+
+			except httpx.HTTPStatusError as error:
+
+				last_error = error
+
+				status = error.response.status_code
+
+				if status == 429:
+
+					logger.warning(
+						f"{model} rate limited."
+					)
+
+					time.sleep(2)
+
+					continue
+
+				raise
+
+			except Exception as error:
+
+				last_error = error
+
+				logger.exception(error)
+
+				continue
+
+		raise Exception(
+			f"All vision models failed.\n{last_error}"
+		)
 
 	def chat(
 		self,
@@ -105,98 +212,204 @@ class OpenRouterService:
 			}
 		]
 
-		data = self._send_request(messages)
+		data = self._send_request(
+			model=settings.openrouter_text_model,
+			messages=messages
+		)
 
-		choices = data.get("choices", [])
-
-		if not choices:
-
-			logger.error(
-				"OpenRouter returned no choices."
-			)
-
-			raise Exception(
-				"No response received from OpenRouter."
-			)
-
-		message = choices[0].get("message", {})
-
-		content = message.get("content")
-
-		if not content:
-
-			logger.error(
-				"OpenRouter returned an empty message."
-			)
-
-			raise Exception(
-				"OpenRouter returned an empty message."
-			)
-
-		return content.strip()
+		return self._extract_content(
+			data
+		)
 
 	def diagnose_plant(
 		self,
-		plant_name: str,
-		symptoms: str,
+		plant_result: dict,
+		vision_result: dict,
+		user_query: str,
 		weather: str = ""
 	) -> str:
 
-		prompt = f"""
-Plant Name:
-{plant_name}
+		intent_detector = IntentDetector()
 
-Symptoms:
-{symptoms}
+		prompt_builder = PromptBuilder()
 
-Weather:
-{weather}
+		intent = intent_detector.detect(
+			user_query
+		)
 
-Analyze the plant and provide:
+		prompt = prompt_builder.build(
+			intent=intent,
+			user_question=user_query,
+			plantnet_result=json.dumps(
+				plant_result,
+				indent=2,
+				ensure_ascii=False
+			),
+			vision_result=json.dumps(
+				vision_result,
+				indent=2,
+				ensure_ascii=False
+			)
+		)
 
-1. Possible Disease
-2. Confidence (Approximate)
-3. Reason
-4. Organic Treatment
-5. Chemical Treatment
-6. Prevention
-7. Recovery Time
-8. Additional Advice
-"""
+		response = self.chat(
+			prompt
+		)
 
-		return self.chat(prompt)
+		response = (
+			response
+			.replace("```json", "")
+			.replace("```", "")
+			.strip()
+		)
 
-	def analyze_symptoms(
+		try:
+
+			return json.loads(
+				response
+			)
+
+		except json.JSONDecodeError:
+
+			logger.warning(
+				"GPT returned invalid JSON."
+			)
+
+			return {
+				"type": "error",
+				"message": response
+			}
+
+	def analyze_image(
 		self,
-		symptoms: str
-	) -> str:
+		image_path: str
+	) -> dict:
 
-		prompt = f"""
-Symptoms:
+		image = image_encoder.encode_image(
+			image_path
+		)
 
-{symptoms}
+		messages = [
+			{
+				"role": "user",
+				"content": [
+					{
+						"type": "text",
+"text": """
+You are an expert plant pathologist and agricultural vision AI.
 
-Analyze these symptoms and provide:
+Analyze ONLY what is visible in the image.
 
-1. Possible Disease
-2. Confidence
-3. Reason
-4. Organic Treatment
-5. Chemical Treatment
-6. Prevention
-"""
+Never guess hidden symptoms.
 
-		return self.chat(prompt)
+Never use external knowledge about the plant.
 
-	def health_check(self) -> bool:
+Never recommend treatment.
+
+Return ONLY valid JSON.
+
+{
+	"is_healthy": true,
+	"plant_part": "",
+	"visible_symptoms": [],
+	"possible_disease": "",
+	"confidence": 0,
+	"severity": "",
+	"disease_stage": "",
+	"affected_area_percent": 0,
+	"reason": "",
+	"recommendation": "",
+	"image_quality": "",
+	"needs_human_review": false
+}
+
+Rules:
+
+1. Look only at the image.
+2. Do not use markdown.
+3. Do not explain outside JSON.
+4. Confidence must be between 0 and 100.
+5. If confidence is below 50:
+	- possible_disease = "Unknown"
+	- needs_human_review = true
+6. Severity must be one of:
+	"None"
+	"Low"
+	"Medium"
+	"High"
+7. Disease stage must be one of:
+	"Healthy"
+	"Early"
+	"Moderate"
+	"Advanced"
+	"Unknown"
+8. recommendation should contain one short sentence describing what should be inspected next.
+9. affected_area_percent must be an integer.
+10. visible_symptoms must contain only symptoms that are actually visible.
+11. Return JSON only.
+"""	
+					},
+					{
+						"type": "image_url",
+						"image_url": {
+							"url": image
+						}
+					}
+				]
+			}
+		]
+
+		data = self._vision_request(
+			messages
+		)
+
+		content = self._extract_content(
+			data
+		)
+
+		content = (
+			content
+			.replace("```json", "")
+			.replace("```", "")
+			.strip()
+		)
+
+		try:
+
+			return json.loads(
+				content
+			)
+
+		except json.JSONDecodeError:
+
+			logger.warning(
+				"Vision model returned invalid JSON."
+			)
+
+			return {
+				"is_healthy": False,
+				"plant_part": "",
+				"visible_symptoms": [],
+				"possible_disease": "Unknown",
+				"confidence": 0,
+				"severity": "Unknown",
+				"reason": content,
+				"image_quality": "Unknown"
+			}
+
+	def health_check(
+		self
+	) -> bool:
 
 		try:
 
 			reply = self.chat(
-				"Reply only with the word OK."
+				"Reply only with OK."
 			)
 
-			return "OK" in reply.upper()
+			return (
+				reply.strip().upper() == "OK"
+			)
 
 		except Exception as error:
 
@@ -206,7 +419,9 @@ Analyze these symptoms and provide:
 
 			return False
 
-	def close(self):
+	def close(
+		self
+	):
 
 		logger.info(
 			"OpenRouter service closed."

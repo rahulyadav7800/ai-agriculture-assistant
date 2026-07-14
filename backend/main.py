@@ -3,14 +3,17 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from backend.api.upload import router as upload_router
+from backend.api.scan import router as scan_router
+from backend.api.weather import router as weather_router
 from backend.config import settings
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
 
-	print(f"Starting {settings.app_name} v{settings.app_version}")
+	print(
+		f"Starting {settings.app_name} v{settings.app_version}"
+	)
 
 	yield
 
@@ -34,11 +37,18 @@ app.add_middleware(
 )
 
 
-# Register API Routers
-app.include_router(upload_router)
+app.include_router(
+	scan_router
+)
 
+app.include_router(
+	weather_router
+)
 
-@app.get("/", tags=["Home"])
+@app.get(
+	"/",
+	tags=["Home"]
+)
 async def home():
 
 	return {
@@ -49,11 +59,15 @@ async def home():
 	}
 
 
-@app.get("/health", tags=["Health"])
+@app.get(
+	"/health",
+	tags=["Health"]
+)
 async def health():
 
 	return {
 		"status": "healthy",
 		"debug": settings.debug,
-		"model": settings.openrouter_model
+		"text_model": settings.openrouter_text_model,
+		"vision_model": settings.openrouter_vision_model
 	}
