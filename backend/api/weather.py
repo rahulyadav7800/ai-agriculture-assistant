@@ -13,7 +13,7 @@ router = APIRouter(
 
 
 @router.get(
-	"/",
+	"",
 	summary="Get current weather"
 )
 async def get_weather(
