@@ -75,7 +75,7 @@ class Settings(BaseSettings):
 	)
 
 	gemini_vision_model: str = Field(
-		default="gemini-2.5-flash",
+		default="models/gemini-3.1-flash-lite",
 		alias="GEMINI_VISION_MODEL"
 	)
 

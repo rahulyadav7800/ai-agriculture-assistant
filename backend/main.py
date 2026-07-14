@@ -30,7 +30,13 @@ app = FastAPI(
 
 app.add_middleware(
 	CORSMiddleware,
-	allow_origins=["*"],
+	allow_origins=[
+
+		"http://localhost:5173",
+
+		"http://127.0.0.1:5173"
+
+	],
 	allow_credentials=True,
 	allow_methods=["*"],
 	allow_headers=["*"],
@@ -66,8 +72,8 @@ async def home():
 async def health():
 
 	return {
-		"status": "healthy",
-		"debug": settings.debug,
-		"text_model": settings.openrouter_text_model,
-		"vision_model": settings.openrouter_vision_model
+	"status": "healthy",
+	"debug": settings.debug,
+	"text_model": settings.openrouter_text_model,
+	"vision_model": settings.gemini_vision_model
 	}
