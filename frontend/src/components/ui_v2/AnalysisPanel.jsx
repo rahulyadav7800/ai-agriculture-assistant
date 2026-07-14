@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useRef, useState } from "react"
 
 import { scanPlant } from "../../services/api"
 
@@ -6,6 +6,7 @@ import UploadCard from "./UploadCard"
 import QuestionInput from "./QuestionInput"
 import GlowButton from "./GlowButton"
 import ResultPanel from "./ResultPanel"
+import LoadingScreen from "./LoadingScreen"
 
 function AnalysisPanel() {
 
@@ -18,6 +19,8 @@ function AnalysisPanel() {
 	const [result, setResult] = useState(null)
 
 	const [error, setError] = useState("")
+
+	const resultRef = useRef(null)
 
 	const handleScan = async () => {
 
@@ -35,6 +38,8 @@ function AnalysisPanel() {
 
 			setError("")
 
+			setResult(null)
+
 			const formData = new FormData()
 
 			formData.append(
@@ -51,16 +56,32 @@ function AnalysisPanel() {
 				formData
 			)
 
-			setResult(
-				response
-			)
+			setResult(response)
+
+			setTimeout(() => {
+
+				resultRef.current?.scrollIntoView({
+
+					behavior: "smooth",
+
+					block: "start"
+
+				})
+
+			}, 200)
 
 		}
 
-		catch {
+		catch (error) {
+
+			console.error(error)
 
 			setError(
+
+				error.response?.data?.detail ||
+
 				"Unable to analyze the plant."
+
 			)
 
 		}
@@ -75,7 +96,14 @@ function AnalysisPanel() {
 
 	return (
 
-		<div className="mx-auto mt-10 max-w-5xl space-y-6">
+		<div
+			className="
+				mx-auto
+				mt-10
+				max-w-5xl
+				space-y-6
+			"
+		>
 
 			<UploadCard
 
@@ -114,7 +142,9 @@ function AnalysisPanel() {
 					<div
 						className="
 							rounded-xl
-							bg-red-100
+							border
+							border-red-200
+							bg-red-50
 							p-4
 							text-red-700
 						"
@@ -128,13 +158,29 @@ function AnalysisPanel() {
 
 			}
 
-			<ResultPanel
+			<div ref={resultRef}>
 
-				result={result}
+				{
 
-				selectedFile={selectedFile}
+					loading ? (
 
-			/>
+						<LoadingScreen />
+
+					) : (
+
+						<ResultPanel
+
+							result={result}
+
+							selectedFile={selectedFile}
+
+						/>
+
+					)
+
+				}
+
+			</div>
 
 		</div>
 

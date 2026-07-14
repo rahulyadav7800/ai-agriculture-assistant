@@ -1,7 +1,7 @@
 """
 File: scan_service.py
-Version: 7.0
-Status: Optimized
+Version: 8.0
+Status: Gemini Vision + OpenRouter Fallback
 """
 
 import asyncio
@@ -11,6 +11,7 @@ from fastapi import UploadFile
 
 from backend.models.response import PlantResponse
 from backend.models.response import ScanResponse
+from backend.services.gemini import gemini_service
 from backend.services.image_service import image_service
 from backend.services.openrouter import openrouter_service
 from backend.services.plantnet import plantnet_service
@@ -18,6 +19,35 @@ from backend.utils.logger import logger
 
 
 class ScanService:
+
+	def _analyze_vision(
+		self,
+		image_path: str
+	) -> dict:
+
+		try:
+
+			logger.info(
+				"Trying Gemini Vision..."
+			)
+
+			return gemini_service.analyze_image(
+				image_path
+			)
+
+		except Exception as error:
+
+			logger.warning(
+				f"Gemini Vision failed: {error}"
+			)
+
+			logger.info(
+				"Falling back to OpenRouter Vision..."
+			)
+
+			return openrouter_service.analyze_image(
+				image_path
+			)
 
 	async def scan(
 		self,
@@ -44,7 +74,7 @@ class ScanService:
 		)
 
 		vision_task = asyncio.to_thread(
-			openrouter_service.analyze_image,
+			self._analyze_vision,
 			str(image_path)
 		)
 

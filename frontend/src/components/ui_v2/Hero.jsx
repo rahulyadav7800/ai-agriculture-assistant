@@ -88,6 +88,9 @@ function Hero() {
 						text-5xl
 						font-black
 						text-gray-900
+						transition-colors
+						duration-300
+						dark:text-white
 						lg:text-6xl
 					"
 				>
@@ -104,6 +107,9 @@ function Hero() {
 						text-lg
 						leading-8
 						text-gray-600
+						transition-colors
+						duration-300
+						dark:text-gray-300
 					"
 				>
 
@@ -143,18 +149,25 @@ function Hero() {
 										items-center
 										gap-2
 										rounded-full
+										border
+										border-green-200
 										bg-green-100
 										px-5
 										py-3
 										text-green-700
 										shadow-md
+										transition-all
+										duration-300
+
+										dark:border-green-500/20
+										dark:bg-green-500/10
+										dark:text-green-300
+										dark:hover:bg-green-500/20
 									"
 
 								>
 
-									<span
-										className="text-lg"
-									>
+									<span className="text-lg">
 
 										{feature.icon}
 

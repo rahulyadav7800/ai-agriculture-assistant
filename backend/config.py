@@ -64,6 +64,22 @@ class Settings(BaseSettings):
 		default="nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free",
 		alias="OPENROUTER_VISION_SECOND_FALLBACK"
 	)
+
+		# ==========================================
+	# Gemini
+	# ==========================================
+
+	gemini_api_key: str = Field(
+		default="",
+		alias="GEMINI_API_KEY"
+	)
+
+	gemini_vision_model: str = Field(
+		default="gemini-2.5-flash",
+		alias="GEMINI_VISION_MODEL"
+	)
+
+
 		# ==========================================
 	# PlantNet
 	# ==========================================

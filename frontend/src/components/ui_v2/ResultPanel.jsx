@@ -1,3 +1,7 @@
+import { useEffect, useMemo, useState } from "react"
+
+import { motion } from "framer-motion"
+
 import GlassCard from "./GlassCard"
 
 function ResultPanel({
@@ -8,6 +12,70 @@ function ResultPanel({
 
 }) {
 
+	const [animatedConfidence, setAnimatedConfidence] = useState(0)
+
+	const previewUrl = useMemo(() => {
+
+		if (!selectedFile) {
+
+			return null
+
+		}
+
+		return URL.createObjectURL(selectedFile)
+
+	}, [selectedFile])
+
+	useEffect(() => {
+
+		return () => {
+
+			if (previewUrl) {
+
+				URL.revokeObjectURL(previewUrl)
+
+			}
+
+		}
+
+	}, [previewUrl])
+
+	useEffect(() => {
+
+		if (!result) {
+
+			return
+
+		}
+
+		const target = Math.round(
+
+			Number(result.plant.confidence)
+
+		)
+
+		let value = 0
+
+		const interval = setInterval(() => {
+
+			value += 1
+
+			if (value >= target) {
+
+				value = target
+
+				clearInterval(interval)
+
+			}
+
+			setAnimatedConfidence(value)
+
+		}, 12)
+
+		return () => clearInterval(interval)
+
+	}, [result])
+
 	if (!result) {
 
 		return null
@@ -16,154 +84,344 @@ function ResultPanel({
 
 	return (
 
-		<div
+		<motion.div
+
+			initial={{
+				opacity: 0,
+				y: 40
+			}}
+
+			animate={{
+				opacity: 1,
+				y: 0
+			}}
+
+			transition={{
+				duration: 0.6
+			}}
+
 			className="
 				mt-10
 				grid
 				gap-6
-				lg:grid-cols-2
+				lg:grid-cols-3
 			"
+
 		>
 
-			<GlassCard>
+			<motion.div
 
-				<h2
-					className="
-						mb-6
-						text-2xl
-						font-bold
-						text-gray-800
-					"
-				>
+				initial={{
+					opacity: 0,
+					x: -25
+				}}
 
-					🌿 Plant Information
+				animate={{
+					opacity: 1,
+					x: 0
+				}}
 
-				</h2>
+				transition={{
+					delay: 0.15
+				}}
 
-				{
+			>
 
-					selectedFile && (
+				<GlassCard className="overflow-hidden">
+
+					<div
+						className="
+							group
+							overflow-hidden
+							rounded-2xl
+						"
+					>
 
 						<img
 
-							src={URL.createObjectURL(selectedFile)}
+							src={previewUrl}
 
 							alt="Plant"
 
 							className="
-								mb-6
-								h-64
+								h-72
 								w-full
-								rounded-2xl
 								object-cover
+								transition-transform
+								duration-500
+								group-hover:scale-105
 							"
 
 						/>
 
-					)
-
-				}
-
-				<div className="space-y-4">
-
-					<div>
-
-						<p className="text-gray-500">
-
-							Plant Name
-
-						</p>
-
-						<p className="text-xl font-bold">
-
-							{result.plant.plant_name}
-
-						</p>
-
 					</div>
 
-					<div>
+					<div className="mt-5 space-y-4">
 
-						<p className="text-gray-500">
+						<div>
 
-							Scientific Name
+							<p
+								className="
+									text-sm
+									text-gray-500
+									transition-colors
+									duration-300
+									dark:text-gray-400
+								"
+							>
 
-						</p>
+								Plant Name
 
-						<p>
+							</p>
 
-							{result.plant.scientific_name}
+							<h2
+								className="
+									mt-1
+									text-2xl
+									font-bold
+									text-gray-800
+									transition-colors
+									duration-300
+									dark:text-white
+								"
+							>
 
-						</p>
+								{result.plant.plant_name}
 
-					</div>
+							</h2>
 
-					<div>
+						</div>
 
-						<p className="text-gray-500">
+						<div>
 
-							Family
+							<p
+								className="
+									text-sm
+									text-gray-500
+									transition-colors
+									duration-300
+									dark:text-gray-400
+								"
+							>
 
-						</p>
+								Scientific Name
 
-						<p>
+							</p>
 
-							{result.plant.family}
+							<p
+								className="
+									mt-1
+									italic
+									text-gray-700
+									transition-colors
+									duration-300
+									dark:text-gray-300
+								"
+							>
 
-						</p>
+								{result.plant.scientific_name}
 
-					</div>
+							</p>
 
-					<div>
+						</div>
 
-						<p className="text-gray-500">
+						<div>
 
-							Confidence
+							<p
+								className="
+									text-sm
+									text-gray-500
+									transition-colors
+									duration-300
+									dark:text-gray-400
+								"
+							>
 
-						</p>
+								Family
 
-						<p className="font-bold text-green-600">
+							</p>
 
-							{result.plant.confidence}%
+							<p
+								className="
+									mt-1
+									font-medium
+									text-gray-700
+									transition-colors
+									duration-300
+									dark:text-gray-200
+								"
+							>
 
-						</p>
+								{result.plant.family}
 
-					</div>
+							</p>
 
-				</div>
+						</div>
 
-			</GlassCard>
+						<div>
 
-			<GlassCard>
+							<div
+								className="
+									mb-2
+									flex
+									items-center
+									justify-between
+								"
+							>
 
-				<h2
+								<span
+									className="
+										font-medium
+										text-gray-800
+										transition-colors
+										duration-300
+										dark:text-gray-100
+									"
+								>
+
+									Confidence
+
+								</span>
+
+								<span
+									className="
+										font-bold
+										text-green-700
+										transition-colors
+										duration-300
+										dark:text-green-400
+									"
+								>
+
+									{animatedConfidence}%
+
+								</span>
+
+							</div>
+
+							<div
+								className="
+									h-3
+									w-full
+									overflow-hidden
+									rounded-full
+									bg-green-100
+									dark:bg-green-900/40
+								"
+							>
+
+								<motion.div
+
+									initial={{
+										width: 0
+									}}
+
+									animate={{
+										width: `${animatedConfidence}%`
+									}}
+
+									transition={{
+										duration: 0.8
+									}}
+
+									className="
+										h-full
+										rounded-full
+										bg-gradient-to-r
+										from-green-500
+										to-emerald-400
+									"
+
+								/>
+
+							</div>
+
+						</div>
+                        					</div>
+
+				</GlassCard>
+
+			</motion.div>
+
+			<motion.div
+
+				className="lg:col-span-2"
+
+				initial={{
+					opacity: 0,
+					x: 25
+				}}
+
+				animate={{
+					opacity: 1,
+					x: 0
+				}}
+
+				transition={{
+					delay: 0.3
+				}}
+
+			>
+
+				<GlassCard
 					className="
-						mb-6
-						text-2xl
-						font-bold
-						text-gray-800
+						h-full
+						hover:shadow-green-500/10
 					"
 				>
 
-					🤖 AI Recommendation
+					<h2
+						className="
+							mb-4
+							text-3xl
+							font-bold
+							text-gray-800
+							transition-colors
+							duration-300
+							dark:text-white
+						"
+					>
 
-				</h2>
+						🤖 AI Analysis
 
-				<div
-					className="
-						whitespace-pre-wrap
-						leading-8
-						text-gray-700
-					"
-				>
+					</h2>
 
-					{result.diagnosis.answer}
+					<motion.div
 
-				</div>
+						initial={{
+							opacity: 0
+						}}
 
-			</GlassCard>
+						animate={{
+							opacity: 1
+						}}
 
-		</div>
+						transition={{
+							delay: 0.5,
+							duration: 0.6
+						}}
+
+						className="
+							whitespace-pre-wrap
+							text-[17px]
+							leading-8
+							text-gray-700
+							transition-colors
+							duration-300
+							dark:text-gray-200
+						"
+
+					>
+
+						{result.diagnosis.answer}
+
+					</motion.div>
+
+				</GlassCard>
+
+			</motion.div>
+
+		</motion.div>
 
 	)
 

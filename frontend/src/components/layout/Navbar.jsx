@@ -1,13 +1,23 @@
 import useWeather from "../../hooks/useWeather"
 
+import { useTheme } from "../../context/ThemeContext"
+
 import {
 	FaLeaf,
-	FaCircle
+	FaCircle,
+	FaMoon,
+	FaSun
 } from "react-icons/fa"
 
 function Navbar() {
 
 	const { weather } = useWeather()
+	console.log(weather)
+
+	const {
+		theme,
+		toggleTheme
+	} = useTheme()
 
 	return (
 
@@ -17,10 +27,17 @@ function Navbar() {
 				top-0
 				z-50
 				border-b
-				border-green-100
-				bg-white/80
-				backdrop-blur-xl
-				shadow-sm
+				border-green-200/60
+				bg-white/60
+				backdrop-blur-2xl
+				shadow-lg
+				shadow-black/5
+				transition-all
+				duration-300
+
+				dark:border-green-500/20
+				dark:bg-[#08120d]/45
+				dark:shadow-black/30
 			"
 		>
 
@@ -52,6 +69,7 @@ function Navbar() {
 							text-xl
 							text-white
 							shadow-lg
+							shadow-green-500/30
 						"
 					>
 
@@ -66,6 +84,9 @@ function Navbar() {
 								text-2xl
 								font-bold
 								text-gray-900
+								transition-colors
+								duration-300
+								dark:text-white
 							"
 						>
 
@@ -77,6 +98,9 @@ function Navbar() {
 							className="
 								text-sm
 								text-gray-500
+								transition-colors
+								duration-300
+								dark:text-gray-400
 							"
 						>
 
@@ -97,23 +121,30 @@ function Navbar() {
 				>
 
 					{
+
 						weather && (
 
 							<div
 								className="
 									flex
-                                    rounded-full
-                                    bg-green-50
-                                    px-3
-                                    py-2
-                                    text-xs
-                                    font-medium
-                                    text-green-700
-                                    items-center
-                                    gap-2
-                                    sm:px-4
-                                    sm:text-sm
-                                    sm:gap-4
+									items-center
+									gap-3
+									rounded-full
+									border
+									border-green-200
+									bg-green-50/70
+									px-4
+									py-2
+									text-sm
+									font-medium
+									text-green-700
+									backdrop-blur-md
+									transition-all
+									duration-300
+
+									dark:border-green-500/20
+									dark:bg-green-500/10
+									dark:text-green-300
 								"
 							>
 
@@ -132,7 +163,53 @@ function Navbar() {
 							</div>
 
 						)
+
 					}
+
+					<button
+
+						onClick={toggleTheme}
+
+						className="
+							flex
+							h-11
+							w-11
+							items-center
+							justify-center
+							rounded-full
+							border
+							border-green-200
+							bg-white/70
+							text-green-700
+							backdrop-blur-md
+							transition-all
+							duration-300
+							hover:scale-110
+							hover:rotate-12
+							hover:border-green-400
+							hover:bg-green-100
+
+							dark:border-green-500/20
+							dark:bg-green-500/10
+							dark:text-yellow-300
+							dark:hover:bg-green-500/20
+						"
+
+						title="Toggle Theme"
+
+					>
+
+						{
+
+							theme === "light"
+
+								? <FaMoon />
+
+								: <FaSun />
+
+						}
+
+					</button>
 
 					<div
 						className="
@@ -155,6 +232,9 @@ function Navbar() {
 								text-sm
 								font-medium
 								text-gray-600
+								transition-colors
+								duration-300
+								dark:text-gray-300
 							"
 						>
 

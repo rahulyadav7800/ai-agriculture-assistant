@@ -7,11 +7,28 @@ function Home() {
 
 	return (
 
-		<div className="min-h-screen bg-green-50">
+		<div
+			className="
+				min-h-screen
+				bg-green-50
+				text-gray-900
+				transition-colors
+				duration-300
+
+				dark:bg-transparent
+				dark:text-gray-100
+			"
+		>
 
 			<Navbar />
 
-			<main className="mx-auto max-w-7xl p-6">
+			<main
+				className="
+					mx-auto
+					max-w-7xl
+					p-6
+				"
+			>
 
 				<Hero />
 

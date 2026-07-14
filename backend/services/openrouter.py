@@ -73,6 +73,10 @@ class OpenRouterService:
 			json=payload,
 			timeout=self.timeout
 		)
+		print("=" * 80)
+		print(response.status_code)
+		print(response.text)
+		print("=" * 80)
 
 		response.raise_for_status()
 

@@ -53,8 +53,15 @@ function QuestionInput({
 						border-none
 						bg-transparent
 						text-lg
+						text-gray-800
 						outline-none
+						transition-colors
+						duration-300
+
 						placeholder:text-gray-400
+
+						dark:text-gray-100
+						dark:placeholder:text-gray-500
 					"
 
 				/>
@@ -70,12 +77,25 @@ function QuestionInput({
 						items-center
 						justify-center
 						rounded-full
+
 						bg-green-600
+
 						text-white
-						transition
+
+						shadow-lg
+						shadow-green-500/25
+
+						transition-all
 						duration-300
+
 						hover:scale-110
 						hover:bg-green-700
+						hover:shadow-green-500/40
+
+						active:scale-95
+
+						dark:bg-green-500
+						dark:hover:bg-green-400
 					"
 
 				>
