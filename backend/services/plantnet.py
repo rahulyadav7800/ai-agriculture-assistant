@@ -66,13 +66,13 @@ class PlantNetService:
 				async with httpx.AsyncClient(
 					timeout=self.timeout
 				) as client:
-
+					print("Sending request to PlantNet...")
 					response = await client.post(
 						url,
 						files=files,
 						data=data
 					)
-
+					print("Response received from PlantNet...")
 			response.raise_for_status()
 
 			result = response.json()

@@ -1,8 +1,11 @@
 """
 File: scan_service.py
-Version: 6.0
-Status: Stable
+Version: 7.0
+Status: Optimized
 """
+
+import asyncio
+import time
 
 from fastapi import UploadFile
 
@@ -19,7 +22,7 @@ class ScanService:
 	async def scan(
 		self,
 		file: UploadFile,
-		query: str = "",
+		query: str = ""
 	) -> ScanResponse:
 
 		logger.info(
@@ -31,29 +34,43 @@ class ScanService:
 		)
 
 		logger.info(
-			"Running PlantNet..."
+			"Running PlantNet and Vision in parallel..."
 		)
 
-		plant = await plantnet_service.identify_plant(
+		start = time.perf_counter()
+
+		plant_task = plantnet_service.identify_plant(
 			str(image_path)
 		)
 
-		logger.info(
-			"Running Vision Model..."
+		vision_task = asyncio.to_thread(
+			openrouter_service.analyze_image,
+			str(image_path)
 		)
 
-		vision = openrouter_service.analyze_image(
-			str(image_path)
+		plant, vision = await asyncio.gather(
+			plant_task,
+			vision_task
+		)
+
+		print(
+			f"Plant + Vision Time: {time.perf_counter() - start:.2f}s"
 		)
 
 		logger.info(
 			"Running GPT..."
 		)
 
+		start = time.perf_counter()
+
 		answer = openrouter_service.diagnose_plant(
 			plant_result=plant,
 			vision_result=vision,
 			user_query=query
+		)
+
+		print(
+			f"GPT Time: {time.perf_counter() - start:.2f}s"
 		)
 
 		logger.info(
