@@ -413,7 +413,90 @@ function ResultPanel({
 
 					>
 
-						{result.diagnosis.answer}
+						{
+	result.diagnosis.type === "default_analysis" ? (
+
+		<div className="space-y-4">
+
+			<h3 className="text-xl font-semibold">
+				{result.diagnosis.title}
+			</h3>
+
+			<p>
+				{result.diagnosis.summary}
+			</p>
+
+			<p>
+				<b>Health:</b> {result.diagnosis.health_status}
+			</p>
+
+			<p>
+				<b>Possible Disease:</b>{" "}
+				{result.diagnosis.possible_disease || "None"}
+			</p>
+
+			{
+				result.diagnosis.visible_symptoms.length > 0 && (
+
+					<div>
+
+						<b>Visible Symptoms:</b>
+
+						<ul className="list-disc ml-5">
+
+							{
+								result.diagnosis.visible_symptoms.map(
+
+									(symptom, index) => (
+
+										<li key={index}>
+											{symptom}
+										</li>
+
+									)
+
+								)
+							}
+
+						</ul>
+
+					</div>
+
+				)
+			}
+
+			<div>
+
+				<b>Recommendations:</b>
+
+				<ul className="list-disc ml-5">
+
+					{
+						result.diagnosis.recommendations.map(
+
+							(item, index) => (
+
+								<li key={index}>
+									{item}
+								</li>
+
+							)
+
+						)
+					}
+
+				</ul>
+
+			</div>
+
+		</div>
+
+	) : (
+
+		result.diagnosis.answer
+
+	)
+}
 
 					</motion.div>
 

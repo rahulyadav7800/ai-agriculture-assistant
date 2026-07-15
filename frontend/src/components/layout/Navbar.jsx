@@ -49,18 +49,28 @@ function Navbar() {
 			>
 
 				<div
-					className="
-						mx-auto
-						flex
-						max-w-7xl
-						items-center
-						justify-between
-						px-6
-						py-4
-					"
-				>
+	className="
+		mx-auto
+		flex
+		max-w-7xl
+		flex-wrap
+		items-center
+		justify-between
+		gap-4
+		px-4
+		py-4
+	"
+>
 
-					<div className="flex items-center gap-4">
+					<div
+	className="
+		flex
+		flex-wrap
+		items-center
+		justify-end
+		gap-2
+	"
+>
 
 						<div
 							className="
@@ -140,39 +150,26 @@ function Navbar() {
 									}
 
 									className="
-										flex
-										cursor-pointer
-										items-center
-										gap-3
+	flex
+	items-center
+	gap-2
+	rounded-full
+	border
+	border-green-200
+	bg-green-50/70
+	px-3
+	py-2
+	text-xs
+	font-medium
+	text-green-700
+	backdrop-blur-md
+	transition-all
+	duration-300
 
-										rounded-full
-
-										border
-										border-green-200
-
-										bg-green-50/70
-
-										px-4
-										py-2
-
-										text-sm
-										font-medium
-
-										text-green-700
-
-										backdrop-blur-md
-
-										transition-all
-										duration-300
-
-										hover:scale-105
-										hover:bg-green-100
-
-										dark:border-green-500/20
-										dark:bg-green-500/10
-										dark:text-green-300
-										dark:hover:bg-green-500/20
-									"
+	dark:border-green-500/20
+	dark:bg-green-500/10
+	dark:text-green-300
+"
 
 								>
 

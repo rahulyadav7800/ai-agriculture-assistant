@@ -6,6 +6,7 @@ import httpx
 from backend.config import settings
 from backend.utils.image_encoder import image_encoder
 from backend.utils.logger import logger
+from backend.services.intent_detector import Intent
 from backend.services.intent_detector import IntentDetector
 from backend.services.prompt_builder import PromptBuilder
 
@@ -232,14 +233,20 @@ class OpenRouterService:
 		user_query: str,
 		weather: str = ""
 	) -> str:
-
+		
 		intent_detector = IntentDetector()
 
 		prompt_builder = PromptBuilder()
 
-		intent = intent_detector.detect(
-			user_query
-		)
+		if user_query.strip():
+
+			intent = intent_detector.detect(
+				user_query
+			)
+
+		else:
+
+			intent = Intent.DEFAULT_ANALYSIS
 
 		prompt = prompt_builder.build(
 			intent=intent,

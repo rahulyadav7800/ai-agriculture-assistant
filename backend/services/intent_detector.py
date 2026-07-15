@@ -28,6 +28,7 @@ class Intent(str, Enum):
 	SEASONAL_CARE = "seasonal_care"
 	WEATHER_ADVICE = "weather_advice"
 	GENERAL_QUESTION = "general_question"
+	DEFAULT_ANALYSIS = "default_analysis"
 
 
 class IntentDetector:

@@ -21,6 +21,10 @@ Your responsibilities:
 6. Return ONLY valid JSON.
 7. Do not include markdown.
 8. Do not explain the JSON.
+Always respond in the same language as the user's question.
+
+If the user does not ask any question, detect the language from the application context.
+Default to Hindi.
 """
 
 		self.intent_prompts = {
@@ -350,6 +354,36 @@ Return JSON:
 	"recommendations":[]
 }
 """,
+
+			Intent.DEFAULT_ANALYSIS: """
+Provide a complete AI analysis of the plant.
+
+Use PlantNet Result and Vision Analysis together.
+
+Return JSON:
+
+{
+	"type":"default_analysis",
+	"title":"",
+	"summary":"",
+	"health_status":"",
+	"visible_symptoms":[],
+	"possible_disease":"",
+	"confidence":0,
+	"recommendations":[]
+}
+
+Rules:
+
+1. summary should contain a short overall analysis.
+2. health_status should be Healthy, Moderate or Unhealthy.
+3. visible_symptoms should list only symptoms visible in the image.
+4. possible_disease should be empty if the plant appears healthy.
+5. confidence must be a number between 0 and 100.
+6. recommendations must contain exactly 3 practical recommendations.
+7. Return JSON only.
+""",
+
 
 			Intent.GENERAL_QUESTION: """
 Answer the user's plant-related question.
